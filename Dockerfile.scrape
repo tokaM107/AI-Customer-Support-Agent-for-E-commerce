@@ -1,0 +1,27 @@
+# syntax=docker/dockerfile:1
+#
+# Separate image for running the Playwright scraper + PDF chunker.
+# This is intentionally NOT part of the serving image (Dockerfile) —
+# Playwright + Chromium adds ~1GB and is only needed when you re-scrape
+# the knowledge base, which is an offline/CI job, not a runtime dependency.
+#
+# Build:  docker build -f Dockerfile.scrape -t noon-rag-scraper .
+# Run:    docker run --rm -v "$(pwd)/data:/app/data" -v "$(pwd)/chunks.json:/app/chunks.json" noon-rag-scraper
+
+FROM mcr.microsoft.com/playwright/python:v1.47.0-jammy
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
+WORKDIR /app
+
+COPY requirements-scrape.txt .
+RUN pip install --no-cache-dir -r requirements-scrape.txt
+
+COPY scraper ./scraper
+COPY app/rag/chunking.py ./app/rag/chunking.py
+
+# Default: run the scraper. Override the command to run chunking.py instead,
+# e.g. `docker run ... noon-rag-scraper python -m app.rag.chunking`
+CMD ["python", "scraper/scrape.py"]

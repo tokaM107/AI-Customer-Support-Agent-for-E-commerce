@@ -1,0 +1,29 @@
+# Secrets — never bake these into an image
+.env
+.env.*
+
+# VCS
+.git
+.gitignore
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# Scraper output (large, not needed at runtime; keep out of serving image)
+data/
+pdfs/
+kb_articles.csv
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Misc
+*.log
+.pytest_cache/
+README.md
